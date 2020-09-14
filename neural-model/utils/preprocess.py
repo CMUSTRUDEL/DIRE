@@ -97,8 +97,7 @@ def main(args):
     print(tar_files)
     shard_size = int(args['--shard-size'])
 
-    os.system(f'mkdir -p {tgt_folder}')
-    os.system(f'mkdir -p {tgt_folder}/files')
+    os.system(f'mkdir -p "{tgt_folder}/files"')
     num_workers = 14
 
     for tar_file in tar_files:
