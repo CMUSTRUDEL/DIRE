@@ -134,7 +134,8 @@ class collect_vars(custom_action_handler):
                 for ea in Functions():
                     try:
                         info = func(ea)
-                        writer.write(func(ea))
+                        if info is not None:
+                            writer.write(info)
                     except (ida_hexrays.DecompilationFailure, ValueError):
                         continue
         print('Vars collected.')
