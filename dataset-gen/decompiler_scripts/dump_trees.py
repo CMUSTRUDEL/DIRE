@@ -64,6 +64,7 @@ class AddressCollector:
 
 # Process a single function given its EA
 def func(ea):
+
     f = idaapi.get_func(ea)
     if hasattr(idaapi, "GetFunctionName"):
         function_name = GetFunctionName(ea)
@@ -72,6 +73,13 @@ def func(ea):
     #print("Decompiling %s" % function_name)
     if f is None:
         print('Please position the cursor within a function')
+
+    # Ignore thunk functions
+    flags = idc.get_func_flags(ea)
+    if flags > 0 and (flags & idaapi.FUNC_THUNK) != 0:
+        print("Ignoring thunk function %s" % function_name)
+        return None
+
 
     cfunc = None
     try:
