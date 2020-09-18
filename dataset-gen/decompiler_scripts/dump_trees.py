@@ -53,7 +53,7 @@ class AddressCollector:
                 if item.ea != UNDEF_ADDR:
                     self.addresses[name].add(item.ea)
                 else:
-                    item_id = self.cg.reverse[item]
+                    item_id = next(b for a, b in self.cg.reverse if a == item)
                     ea = self.cg.get_pred_ea(item_id)
                     if ea != UNDEF_ADDR:
                         self.addresses[name].add(ea)
@@ -61,7 +61,11 @@ class AddressCollector:
 # Process a single function given its EA
 def func(ea):
     f = idaapi.get_func(ea)
-    function_name = GetFunctionName(ea)
+    if hasattr(idaapi, "GetFunctionName"):
+        function_name = GetFunctionName(ea)
+    else:
+        function_name = get_func_name(ea)
+    #print("Decompiling %s" % function_name)
     if f is None:
         print('Please position the cursor within a function')
 
@@ -71,8 +75,6 @@ def func(ea):
     except ida_hexrays.DecompilationFailure as e:
         print('Failed to decompile %x: %s!' % (ea, function_name))
         raise e
-
-    renamed_file = renamed_prefix + '_' + function_name + '.c'
 
     # Rename decompilation graph
     cg = CFuncGraph(None)
@@ -124,14 +126,17 @@ def main():
     renamed_prefix = os.path.join(os.environ['OUTPUT_DIR'], 'functions',
                                   os.environ['PREFIX'])
     # Load collected variables
-    with open(os.environ['COLLECTED_VARS']) as vars_fh:
+    with open(os.environ['COLLECTED_VARS'], "rb") as vars_fh:
         varmap = pickle.load(vars_fh)
 
     # Collect decompilation info
     cv = collect_vars()
     cv.activate(None)
 
-idaapi.autoWait()
+if hasattr(idaapi, "auto_wait"): # IDA 7.4+
+    idaapi.auto_wait()
+else:
+    idaapi.autoWait() # Old IDA
 if not idaapi.init_hexrays_plugin():
     idaapi.load_plugin('hexrays')
     idaapi.load_plugin('hexx64')

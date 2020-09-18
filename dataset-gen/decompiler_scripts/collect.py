@@ -17,7 +17,7 @@ varmap = dict()                 # frozenset of addrs -> varname
 class CollectGraph(CFuncGraph):
     def collect_vars(self):
         rev_dict = defaultdict(set)
-        for n in xrange(len(self.items)):
+        for n in range(len(self.items)):
             item = self.items[n]
             if item.op is ida_hexrays.cot_var:
                 name = get_expr_name(item.cexpr)
@@ -31,7 +31,7 @@ class CollectGraph(CFuncGraph):
         # ::NONE:: is a sentinel value used to indicate that two different
         # variables map to the same set of addresses. This happens in small
         # functions that use all of their arguments to call another function.
-        for name, addrs in rev_dict.iteritems():
+        for name, addrs in rev_dict.items():
             addrs = frozenset(addrs)
             if (addrs in varmap):
                 varmap[addrs] = '::NONE::'
@@ -50,7 +50,7 @@ def func(ea):
         pass
 
     if cfunc is None:
-        print('Failed to decompile %x!' % ea)
+        print(('Failed to decompile %x!' % ea))
         return True
 
     # Build decompilation graph
@@ -73,19 +73,22 @@ class collect_vars(custom_action_handler):
 
 class dump_info(custom_action_handler):
     def activate(self, ctx):
-        with open(os.environ['COLLECTED_VARS'], 'w') as vars_fh:
+        with open(os.environ['COLLECTED_VARS'], 'wb') as vars_fh:
             pickle.dump(varmap, vars_fh)
             vars_fh.flush()
         return 1
 
-idaapi.autoWait()
+if hasattr(idaapi, "auto_wait"): # IDA 7.4+
+    idaapi.auto_wait()
+else:
+    idaapi.autoWait() # Old IDA
 if not idaapi.init_hexrays_plugin():
     idaapi.load_plugin('hexrays')
     idaapi.load_plugin('hexx64')
     if not idaapi.init_hexrays_plugin():
         print('Unable to load Hex-rays')
     else:
-        print('Hex-rays version %s has been detecetd' % idaapi.get_hexrays_version())
+        print(('Hex-rays version %s has been detected' % idaapi.get_hexrays_version()))
 
 def main():
     cv = collect_vars()
