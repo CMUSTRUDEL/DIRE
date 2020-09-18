@@ -22,23 +22,27 @@ class RenamedGraphBuilder(GraphBuilder):
         self.addresses = addresses
         super(RenamedGraphBuilder, self).__init__(cg)
 
+    def visit_var(self, v):
+        global var_id
+        original_name = v.name
+        if not sentinel_vars.match(original_name):
+            # Get new name of variable
+            addresses = frozenset(self.addresses[original_name])
+            if addresses in varmap and varmap[addresses] != '::NONE::':
+                new_name = varmap[addresses]
+            else:
+                new_name = original_name
+            # Save names
+            #print("Renaming %s to %s" % (original_name, new_name))
+            varnames[var_id] = (original_name, new_name)
+            # Rename variables to @@VAR_[id]@@[orig name]@@[new name]
+            v.name = '@@VAR_' + str(var_id) + '@@' + original_name + '@@' + new_name
+            var_id += 1
+
     def visit_expr(self, e):
         global var_id
         if e.op is ida_hexrays.cot_var:
-            # Save original name of variable
-            original_name = get_expr_name(e)
-            if not sentinel_vars.match(original_name):
-                # Get new name of variable
-                addresses = frozenset(self.addresses[original_name])
-                if addresses in varmap and varmap[addresses] != '::NONE::':
-                    new_name = varmap[addresses]
-                else:
-                    new_name = original_name
-                # Save names
-                varnames[var_id] = (original_name, new_name)
-                # Rename variables to @@VAR_[id]@@[orig name]@@[new name]
-                self.func.get_lvars()[e.v.idx].name = '@@VAR_' + str(var_id) + '@@' + original_name + '@@' + new_name
-                var_id += 1
+            self.visit_var(self.func.get_lvars()[e.v.idx])
         return self.process(e)
 
 class AddressCollector:
@@ -84,6 +88,10 @@ def func(ea):
     ac.collect()
     rg = RenamedGraphBuilder(cg, cfunc, ac.addresses)
     rg.apply_to(cfunc.body, None)
+    # This will force the function porameters to be renamed even if
+    # they aren't used in the body of the function
+    for arg in cfunc.arguments:
+        rg.visit_var(arg)
 
     # Create tree from collected names
     cfunc.build_c_tree()
@@ -105,6 +113,11 @@ class custom_action_handler(ida_kernwin.action_handler_t):
 
 class collect_vars(custom_action_handler):
     def activate(self, ctx):
+        print('Initial decompile pass')
+        # We use decompile_many to force Hex-Rays to decompile
+        # everything in its own order.  This is important because the
+        # order in which functions is decompiled matters!
+        assert ida_hexrays.decompile_many('/dev/null', None, 1)
         print('Collecting vars.')
         jsonl_file_name = os.path.join(os.environ['OUTPUT_DIR'],
                                        os.environ['PREFIX']) + '.jsonl'
