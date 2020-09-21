@@ -19,6 +19,7 @@ import tqdm
 statyre_dir = os.path.dirname(os.path.abspath(__file__))
 COLLECT = os.path.join(statyre_dir, 'decompiler_scripts', 'collect.py')
 DUMP_TREES = os.path.join(statyre_dir, 'decompiler_scripts', 'dump_trees.py')
+TIMEOUT=300
 
 parser = argparse.ArgumentParser(description="Run the decompiler to generate a corpus.")
 parser.add_argument('--ida',
@@ -90,7 +91,7 @@ def do_file(binary):
             subprocess.check_output(['cp', file_path, orig.name])
             # Timeout after 30 seconds for first run
             try:
-                run_decompiler(orig.name, env, COLLECT, timeout=30)
+                run_decompiler(orig.name, env, COLLECT, timeout=TIMEOUT)
             except subprocess.TimeoutExpired:
                 print(f"{file_path} Timed out\n")
                 return
