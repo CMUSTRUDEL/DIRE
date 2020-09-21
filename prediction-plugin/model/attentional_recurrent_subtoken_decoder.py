@@ -220,6 +220,10 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                         if new_variable_list[-1] == [end_of_variable_id]:
                             continue
 
+                        # remove identity cases
+                        if new_variable_list[-1] == [same_variable_id, end_of_variable_id]:
+                            continue
+
                         if remove_duplicate:
                             last_pred = new_variable_list[-1]
                             if any(x == last_pred
