@@ -103,14 +103,20 @@ def do_file(binary):
                 print(f"No variables collected from {file_path}\n")
                 return
         # Make a new stripped copy and pass it the collected vars
-        with tempfile.NamedTemporaryFile() as stripped:
-            subprocess.call(['cp', file_path, stripped.name])
-            subprocess.call(['strip', '--strip-unneeded', stripped.name])
-            #print(f"{binary} stripped")
-            # Dump the trees.
-            # No timeout here, we know it'll run in a reasonable amount of
-            # time and don't want mismatched files
-            run_decompiler(stripped.name, env, DUMP_TREES)
+        try:
+            with tempfile.NamedTemporaryFile() as stripped:
+                subprocess.call(['rm', stripped.name])
+                subprocess.call(['strip', '--strip-unneeded', file_path, '-o', stripped.name])
+                if not os.path.exists(stripped.name):
+                    print(f"Stripping ${file_path} failed\n")
+                    return
+                #print(f"{binary} stripped")
+                # Dump the trees.
+                # No timeout here, we know it'll run in a reasonable amount of
+                # time and don't want mismatched files
+                run_decompiler(stripped.name, env, DUMP_TREES)
+        except FileNotFoundError:
+            pass
     #end = datetime.datetime.now()
     #duration = end-start
     #print(f"Duration: {duration}\n")
@@ -123,5 +129,5 @@ with tempfile.TemporaryDirectory() as tempdir:
     tasks = os.listdir(args.binaries_dir)
 
     pool = multiprocessing.Pool()
-    for _ in tqdm.tqdm(pool.imap_unordered(do_file, tasks), total=len(tasks)):
+    for _ in tqdm.tqdm(pool.imap_unordered(do_file, tasks), smoothing=0.0, total=len(tasks)):
         pass
