@@ -4,29 +4,20 @@ This code loads a provided model and generates predictions from Hex-Rays ASTs.
 
 ## Python Environment
 
-To install and activate the conda environment:
-
-```
-conda env create -f env.yml
-conda activate dire_prediction
-```
-
-You can also setup the environment using `pip`:
-
-```
-pip install -r requirements.txt --find-links https://download.pytorch.org/whl/torch_stable.html
-```
-
-Note: If you are using virtual environments with python3, you should
-use `venv` instead of `virtualenv` to avoid (this
+We recommend installing in a virtual environment.  If you are using
+a virtual environment with python3, you should use `venv` instead of
+`virtualenv` to avoid (this
 bug)[https://github.com/pypa/virtualenv/issues/737].
 
-## Hex-Rays Python Environment
-
-Install `jsonlines` so that the IDApython script can see it:
+You can install the required packages by using `pip`.  If you want to use a GPU, you can run
 ```
-sudo pip install jsonlines
+pip install -r requirements_gpu.txt --find-links https://download.pytorch.org/whl/torch_stable.html
 ```
+to download a larger version of `pytorch` that includes GPU support.  If you don't want to use a GPU, or aren't sure, you can run
+```
+pip install -r requirements_cpu.txt --find-links https://download.pytorch.org/whl/torch_stable.html
+```
+to download a CPU only version.  Both versions will run on the CPU, but the GPU version is significantly larger, so it's better to use the CPU version if you know you won't be using your GPU anyway.
 
 ## Download the pretrained models
 
@@ -40,14 +31,13 @@ tar -xzf pretrained_model.tar.gz
 ### Plugin
 
 To install the script as a plugin, create a symbolic link to
-`prediction-plugin/decompiler/decompiler-scripts/predict_names.py`
-and
-`prediction-plugin/decompiler/decompiler-scripts/util.py`
-from your Hex-Rays `plugins` directory.  For example:
+`prediction-plugin/decompiler/decompiler-scripts/predict_names.py` and
+`prediction-plugin/decompiler/decompiler-scripts/util.py` from your
+Hex-Rays `plugins` directory.  For example:
 
 ```bash
-ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/predict_names.py /path/to/idapro-7.3/plugins/predict_names.py
-ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/util.py /path/to/idapro-7.3/plugins/util.py
+ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/predict_names.py /path/to/idapro-7.5/plugins/predict_names.py
+ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/util.py /path/to/idapro-7.5/plugins/util.py
 ```
 
 You only need to do this once.
@@ -65,15 +55,15 @@ window for any function (e.g., by pressing F5) inside Hex-Rays.  Use
 the "Predict variable names" action that is available from the
 right-click context menu of the Pseudocode window.
 
-Note that Hex-Rays must always be loaded from the `dire_prediction`
-Conda environment.
+Note that Hex-Rays must always be loaded from the python environment
+containing the packages installed by `pip`.
 
 # Running the scripts manually
 
 For debugging or development purposes, you may also wish to run the
 prediction plugin through scripts.  Before starting, you must first
-follow the directions above to [setup the `dire_prediction` conda
-environment](#conda-environment) and [download the pretrained
+follow the directions above to [setup the python
+environment](#python-environment) and [download the pretrained
 models](#download-the-pretrained-models).
 
 ## Create a working directory
@@ -118,7 +108,6 @@ To predict using the  pretrained model, run the following command.
 
  ```bash
 python exp.py \
-    --cuda \
     data/saved_models/model.hybrid.bin \
     workdir/preprocessed/preprocessed.tar
 ```
