@@ -79,47 +79,50 @@ def run_decompiler(file_name, env, script, timeout=None):
     return output
 
 def do_file(binary):
-    start = datetime.datetime.now()
-    #print(f"Started: {start}")
-    env['PREFIX'] = binary
-    file_path = os.path.join(args.binaries_dir, binary)
-    #print(f"Collecting from {file_path}")
-    with tempfile.NamedTemporaryFile() as collected_vars:
-        # First collect variables
-        env['COLLECTED_VARS'] = collected_vars.name
-        with tempfile.NamedTemporaryFile() as orig:
-            subprocess.check_output(['cp', file_path, orig.name])
-            # Timeout after 30 seconds for first run
-            try:
-                run_decompiler(orig.name, env, COLLECT, timeout=TIMEOUT)
-            except subprocess.TimeoutExpired:
-                print(f"{file_path} Timed out\n")
-                return
-            try:
-                if not pickle.load(collected_vars):
+    # Create a new temporary directory for this file. This is needed
+    # to delete the .i64 files that come from IDA
+    with tempfile.TemporaryDirectory() as tempdir:
+        start = datetime.datetime.now()
+        #print(f"Started: {start}")
+        env['PREFIX'] = binary
+        file_path = os.path.join(args.binaries_dir, binary)
+        #print(f"Collecting from {file_path}")
+        with tempfile.NamedTemporaryFile() as collected_vars:
+            # First collect variables
+            env['COLLECTED_VARS'] = collected_vars.name
+            with tempfile.NamedTemporaryFile(dir=tempdir) as orig:
+                subprocess.check_output(['cp', file_path, orig.name])
+                # Timeout after 30 seconds for first run
+                try:
+                    run_decompiler(orig.name, env, COLLECT, timeout=TIMEOUT)
+                except subprocess.TimeoutExpired:
+                    print(f"{file_path} Timed out\n")
+                    return
+                try:
+                    if not pickle.load(collected_vars):
+                        print(f"No variables collected from {file_path}\n")
+                        return
+                except:
                     print(f"No variables collected from {file_path}\n")
                     return
-            except:
-                print(f"No variables collected from {file_path}\n")
-                return
-        # Make a new stripped copy and pass it the collected vars
-        try:
-            with tempfile.NamedTemporaryFile() as stripped:
-                subprocess.call(['rm', stripped.name])
-                subprocess.call(['strip', '--strip-unneeded', file_path, '-o', stripped.name])
-                if not os.path.exists(stripped.name):
-                    print(f"Stripping ${file_path} failed\n")
-                    return
-                #print(f"{binary} stripped")
-                # Dump the trees.
-                # No timeout here, we know it'll run in a reasonable amount of
-                # time and don't want mismatched files
-                run_decompiler(stripped.name, env, DUMP_TREES)
-        except FileNotFoundError:
-            pass
-    #end = datetime.datetime.now()
-    #duration = end-start
-    #print(f"Duration: {duration}\n")
+            # Make a new stripped copy and pass it the collected vars
+            try:
+                with tempfile.NamedTemporaryFile(dir=tempdir) as stripped:
+                    subprocess.call(['rm', stripped.name])
+                    subprocess.call(['strip', '--strip-unneeded', file_path, '-o', stripped.name])
+                    if not os.path.exists(stripped.name):
+                        print(f"Stripping ${file_path} failed\n")
+                        return
+                    #print(f"{binary} stripped")
+                    # Dump the trees.
+                    # No timeout here, we know it'll run in a reasonable amount of
+                    # time and don't want mismatched files
+                    run_decompiler(stripped.name, env, DUMP_TREES)
+            except FileNotFoundError:
+                pass
+        #end = datetime.datetime.now()
+        #duration = end-start
+        #print(f"Duration: {duration}\n")
 
 # Create a temporary directory, since the decompiler makes a lot of additional
 # files that we can't clean up from here
