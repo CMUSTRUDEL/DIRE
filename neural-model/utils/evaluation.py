@@ -29,6 +29,9 @@ class Evaluator(object):
             for key, val in metrics.items():
                 agg_results.setdefault(key, []).append(val)
 
+        if len(agg_results) == 0:
+            return dict()
+
         avg_results = dict()
         avg_results['corpus_cer'] = sum(agg_results['edit_distance']) / sum(agg_results['ref_len'])
 

@@ -122,7 +122,7 @@ def main():
     cv = collect_vars()
     cv.activate(None)
 
-if hasattr(idaapi, "auto_wait"): # IDA 7.4
+if hasattr(idaapi, "auto_wait"): # IDA 7.4+
     idaapi.auto_wait()
 else:
     idaapi.autoWait() # Old IDA

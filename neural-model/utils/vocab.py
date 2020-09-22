@@ -233,10 +233,10 @@ if __name__ == '__main__':
         # train subtoken models
         src_preserved_tokens = ','.join(src_preserved_tokens)
         spm.SentencePieceTrainer.Train(f'--add_dummy_prefix=false --pad_id={PAD_ID} --bos_id=1 --eos_id=2 --unk_id=3 '
-                                       f'--user_defined_symbols={src_preserved_tokens} '
+                                       f'--user_defined_symbols="{src_preserved_tokens}" '
                                        f'--vocab_size={vocab_size} '
-                                       f'--model_prefix={vocab_file}.src_code_tokens --model_type=bpe '
-                                       f'--input={src_code_tokens_file}')
+                                       f'--model_prefix="{vocab_file}".src_code_tokens --model_type=bpe '
+                                       f'--input="{src_code_tokens_file}"')
         src_code_tokens_vocab_entry = VocabEntry(vocab_file + '.src_code_tokens.model')
 
         print('building target words vocabulary')
@@ -248,8 +248,8 @@ if __name__ == '__main__':
         spm.SentencePieceTrainer.Train(f'--add_dummy_prefix=false --pad_id={PAD_ID} --bos_id=1 --eos_id=2 --unk_id=3 '
                                        f'--control_symbols=<IDENTITY> '
                                        f'--vocab_size={vocab_size} '
-                                       f'--model_prefix={vocab_file}.tgt --model_type=bpe '
-                                       f'--input={tgt_word_file}')
+                                       f'--model_prefix="{vocab_file}.tgt" --model_type=bpe '
+                                       f'--input="{tgt_word_file}"')
         tgt_var_vocab_entry = VocabEntry(vocab_file + '.tgt.model')
     else:
         tgt_var_vocab_entry = VocabEntry.from_corpus([tgt_words], size=vocab_size,
