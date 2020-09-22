@@ -4,10 +4,10 @@ This code loads a provided model and generates predictions from Hex-Rays ASTs.
 
 ## Python Environment
 
-We recommend installing in a virtual environment.  If you are using
-a virtual environment with python3, you should use `venv` instead of
-`virtualenv` to avoid (this
-bug)[https://github.com/pypa/virtualenv/issues/737].
+We recommend installing in a virtual environment.  If you are using a
+virtual environment with python3, you should use `venv` instead of
+`virtualenv` to avoid [this
+bug](https://github.com/pypa/virtualenv/issues/737).
 
 You can install the required packages by using `pip`.  If you want to use a GPU, you can run
 ```
