@@ -120,6 +120,7 @@ class predict_names_ah_t(idaapi.action_handler_t):
 
     def activate(self, ctx):
         print("Suggesting variable names...")
+        idaapi.show_wait_box("Suggesting variable names... please wait")
         ea = idaapi.get_screen_ea()
         vuu = ida_hexrays.get_widget_vdui(ctx.widget)
         if ea is None:
@@ -155,6 +156,8 @@ class predict_names_ah_t(idaapi.action_handler_t):
 
                 except ValueError as e:
                     idaapi.warning(str(e) + ". See output window for more details.")
+
+        idaapi.hide_wait_box()
         return 1
 
     def update(self, ctx):
