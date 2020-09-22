@@ -191,8 +191,44 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                 beam_cont_cand_hyp_scores = \
                     cont_cand_hyp_scores[beam_start_hyp_pos: beam_end_hyp_pos]
                 cont_beam_size = beam_size - len(completed_hyps[ast_id])
+
+                # At this point we are selecting the k best scores.
+                # But we really want to exclude the score of any
+                # predction of identity.  And might as well exclude
+                # any empty predctions as well.  We can do this later,
+                # but if all k of our predictions are empty or
+                # identity, bad things will happen.
+
+                # So loop over each hypothesis and look at the previous
+                # variable list.  If the previous variable list is
+                # [identity], then adjust the score for the beam
+                # position corresponding to end.
+
+                # XXX: We should probably do the same thing for duplicates!
+
+                score_adjust = []
+                for hypothesis in beam:
+                    # Get the list of subtokens predicted so far...
+                    variable_list = hypothesis.variable_list[-1]
+
+                    # By default we add a vector of zeros
+                    row_adjust = torch.zeros(tgt_vocab_size)
+
+                    # But if we predicted same_variable_id, or this is
+                    # the first prediction, we'll penalize the
+                    # prediction for end_of_variable_id
+                    if variable_list == [same_variable_id] or \
+                       variable_list == []:
+                        row_adjust[end_of_variable_id] = -1000.0
+
+                    # Add the adjustment vector
+                    score_adjust.append(row_adjust)
+
+                # Finally concatenate the list of vectors
+                score_adjust = torch.cat(score_adjust)
+
                 beam_new_hyp_scores, beam_new_hyp_positions = \
-                    torch.topk(beam_cont_cand_hyp_scores.view(-1),
+                    torch.topk(beam_cont_cand_hyp_scores.view(-1) + score_adjust,
                                k=cont_beam_size,
                                dim=-1)
 
@@ -216,12 +252,9 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                         list(new_variable_list[-1] + [hyp_var_name_id])
 
                     if hyp_var_name_id == end_of_variable_id:
+
                         # remove empty cases
                         if new_variable_list[-1] == [end_of_variable_id]:
-                            continue
-
-                        # remove identity cases
-                        if new_variable_list[-1] == [same_variable_id, end_of_variable_id]:
                             continue
 
                         if remove_duplicate:
