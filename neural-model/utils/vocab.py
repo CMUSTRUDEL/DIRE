@@ -18,6 +18,7 @@ import pickle
 from docopt import docopt
 import json
 import sentencepiece as spm
+import shutil
 
 from utils.grammar import Grammar
 
@@ -182,6 +183,11 @@ if __name__ == '__main__':
     from utils.dataset import Dataset
 
     args = docopt(__doc__)
+
+    # Make sure sentencepiece commands are actually in the path!
+    if args['--use-bpe']:
+        assert shutil.which("spm_train") is not None, "Ensure the sentencepiece commands (spm_train) are on PATH"
+
     vocab_size = int(args['--size'])
     vocab_file = args['VOCAB_FILE']
     train_set = Dataset(args['TRAIN_FILE'])
@@ -196,6 +202,7 @@ if __name__ == '__main__':
     tgt_words = []
     identifier_names = []
     type_tokens = []
+
     for example in train_set.get_iterator(progress=True, num_workers=5):
         for node in example.ast:
             node_types.add(node.node_type)

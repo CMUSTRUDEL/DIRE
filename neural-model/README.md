@@ -46,7 +46,13 @@ python -m utils.preprocess \
     data/preprocessed_data
 ```
 
-**Vocabulary Files** We've included the vocabulary file in the release (under `data/vocab.bpe10000`). If you would like to create your own vocabulary (e.g., to try a different BPE vocabulary size), simply run:
+**Vocabulary Files** We've included the vocabulary file in the release
+(under `data/vocab.bpe10000`). If you would like to create your own
+vocabulary (e.g., to try a different BPE vocabulary size), you will
+need to install
+[sentencepiece](https://github.com/google/sentencepiece) and ensure
+that its commands (e.g., `spm_train`) are on your `PATH`.  Then,
+simply run:
 
 ```bash
 python -m utils.vocab \
