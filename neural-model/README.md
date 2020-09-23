@@ -24,7 +24,7 @@ We created a corpus of 164,632 unique x86-64 binaries generated from C projects 
 
 ### Pre-process the Github Binaries Dataset for DIRE
 
-**Clearning Binary Data** To train and test DIRE model using the collected binaries dataset, first run the following pre-process script `utils.preprocess` to (1) filter invalid examples (e.g., code with too-large ASTs), and (2) randomly partition the entire dataset into training/development/test sets:
+**Cleaning and Splitting Binary Data** To train and test DIRE model using the collected binaries dataset, first run the following pre-process script `utils.preprocess` to (1) filter invalid examples (e.g., code with too-large ASTs), and (2) randomly partition the entire dataset into training/development/test sets:
 
 ```bash
 mkdir -p data/preprocessed_data
