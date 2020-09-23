@@ -16,6 +16,7 @@ from itertools import chain
 import torch
 import pickle
 from docopt import docopt
+import multiprocessing
 import json
 import sentencepiece as spm
 import shutil
@@ -203,7 +204,7 @@ if __name__ == '__main__':
     identifier_names = []
     type_tokens = []
 
-    for example in train_set.get_iterator(progress=True, num_workers=5):
+    for example in train_set.get_iterator(progress=True, num_workers=multiprocessing.cpu_count()):
         for node in example.ast:
             node_types.add(node.node_type)
 

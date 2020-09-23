@@ -20,6 +20,7 @@ import ujson as json
 
 from docopt import docopt
 import os, sys
+import multiprocessing
 from multiprocessing import Process
 import numpy as np
 
@@ -98,7 +99,7 @@ def main(args):
     shard_size = int(args['--shard-size'])
 
     os.system(f'mkdir -p "{tgt_folder}/files"')
-    num_workers = 14
+    num_workers = multiprocessing.cpu_count()
 
     for tar_file in tar_files:
         print(f'read {tar_file}')
