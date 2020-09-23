@@ -70,7 +70,7 @@ python exp.py \
     --cuda \
     --work-dir=exp_runs/dire.hybrid \
     --extra-config='{ "data": {"train_file": "data/preprocessed_data/train-shard-*.tar" }, "decoder": { "input_feed": false, "tie_embedding": true }, "train": { "evaluate_every_nepoch": 5, "max_epoch": 60 } }' \
-    data/config/model.hybrid.jsonnet
+    data/config/config.hybrid.jsonnet
 ```
 
 `DIRE` uses [`json.net`]() for programmable configuration. Extra configs could be specified using the `--extra-config` argument.
