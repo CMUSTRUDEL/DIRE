@@ -81,7 +81,7 @@ To evaluate a saved or pretrained model, run the following command.
 python exp.py \
     test \
     --cuda \
-    --extra-config='{"data": {"vocab_file": "data/vocab.bpe10000/vocab"}, "decoder": {"remove_duplicates_in_prediction": true} }' \
+    --extra-config='{"data": {"vocab_file": "data/vocab.bpe10000/vocab"}, "decoder": {"remove_duplicates_in_prediction": true, "vocab_file": "data/vocab.bpe10000/vocab"}, "encoder": {"graph_encoder":{"vocab_file": "data/vocab.bpe10000/vocab"}, "seq_encoder":{"vocab_file": "data/vocab.bpe10000/vocab"}}}' \
     data/saved_models/model.hybrid.bin \   # path to the pretrained models at `data/saved_models` or the saved model under the user-specified work directory
     data/preprocessed_data/test.tar
 ```
