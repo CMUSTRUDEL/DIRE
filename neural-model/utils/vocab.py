@@ -238,7 +238,7 @@ if __name__ == '__main__':
                                        bos_id=1,
                                        eos_id=2,
                                        unk_id=3,
-                                       user_defined_symbols=src_preserved_tokens,
+                                       user_defined_symbols=list(src_preserved_tokens),
                                        vocab_size=vocab_size,
                                        model_prefix=f"{vocab_file}.src_code_tokens",
                                        model_type="bpe",
