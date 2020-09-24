@@ -29,6 +29,7 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
         params = RecurrentSubtokenDecoder.default_params()
         params.update({
             'remove_duplicates_in_prediction': True,
+            'remove_identities_in_predictions': False,
             'context_encoding_size': 128,
             'attention_target': 'ast_nodes'  # terminal_nodes
         })
@@ -81,6 +82,7 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
         same_variable_id = self.vocab.target[SAME_VARIABLE_TOKEN]
         end_of_variable_id = self.vocab.target[END_OF_VARIABLE_TOKEN]
         remove_duplicate = self.config['remove_duplicates_in_prediction']
+        remove_identity_prediction = self.config['remove_identities_in_predictions']
 
         variable_nums = []
         for ast_id, example in enumerate(examples):
@@ -164,6 +166,11 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                     variable_ptr = prev_hyp.variable_ptr
                     new_variable_list = list(prev_hyp.variable_list)
                     new_variable_list[-1] = list(new_variable_list[-1] + [hyp_var_name_id])
+
+                    # remove identity cases
+                    if remove_identity_prediction:
+                        if hyp_var_name_id == same_variable_id:
+                            continue
 
                     if hyp_var_name_id == end_of_variable_id:
                         # remove empty cases
