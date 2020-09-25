@@ -212,7 +212,7 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                     variable_list = hypothesis.variable_list[-1]
 
                     # By default we add a vector of zeros
-                    row_adjust = torch.zeros(tgt_vocab_size)
+                    row_adjust = torch.zeros(tgt_vocab_size, device=self.device)
 
                     # But if we predicted same_variable_id, or this is
                     # the first prediction, we'll penalize the
@@ -233,7 +233,7 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                                dim=-1)
 
                 # (cont_beam_size)
-                beam_prev_hyp_ids = beam_new_hyp_positions / tgt_vocab_size
+                beam_prev_hyp_ids = beam_new_hyp_positions // tgt_vocab_size
                 beam_hyp_var_name_ids = beam_new_hyp_positions % tgt_vocab_size
 
                 _prev_hyp_ids = beam_prev_hyp_ids.cpu()
