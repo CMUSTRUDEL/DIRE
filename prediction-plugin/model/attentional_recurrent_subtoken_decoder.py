@@ -204,8 +204,6 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                 # [identity], then adjust the score for the beam
                 # position corresponding to end.
 
-                # XXX: We should probably do the same thing for duplicates!
-
                 score_adjust = []
                 for hypothesis in beam:
                     # Get the list of subtokens predicted so far...
@@ -215,10 +213,12 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                     row_adjust = torch.zeros(tgt_vocab_size, device=self.device)
 
                     # But if we predicted same_variable_id, or this is
-                    # the first prediction, we'll penalize the
-                    # prediction for end_of_variable_id
+                    # the first prediction, or a duplicate prediction,
+                    # we'll penalize the prediction for
+                    # end_of_variable_id
                     if variable_list == [same_variable_id] or \
-                       variable_list == []:
+                       variable_list == [] or \
+                       any(old_prediction == variable_list + [end_of_variable_id] for old_prediction in hypothesis.variable_list[:-1]):
                         row_adjust[end_of_variable_id] = -1000.0
 
                     # Add the adjustment vector
