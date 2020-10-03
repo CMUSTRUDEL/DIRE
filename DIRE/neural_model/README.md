@@ -29,7 +29,7 @@ We created a corpus of 164,632 unique x86-64 binaries generated from C projects 
 ```bash
 mkdir -p data/preprocessed_data
 
-python -m utils.preprocess \
+python -m DIRE.neural_model.utils.preprocess \
     "path/to/binary/dataset/*.tar.gz" \   # use wild-card to match all tar files
     data/preprocessed_data
 ```
@@ -39,7 +39,7 @@ All scripts are documented using [`docopt`](http://docopt.org/), please refer to
 **Our Preprocessed Splits** You may also download our pre-processed dataset along with the training/testing splits from [here](https://drive.google.com/drive/folders/19Rf7NtW56r6fz-ycldZq9hjxNr5osAJW?usp=sharing). The pre-processing scripts also support fixing the testing set to be a pre-defined partition. For example, to use the same testing partition as the one used in our paper during pre-processing, you may run:
 
 ```bash
-python -m utils.preprocess \
+python -m DIRE.neural_model.utils.preprocess \
     --no-filtering \                                # optional: do not perform filtering 
     --test-file=path/to/predefined/test_file.tar \
     "path/to/binary/dataset/*.tar.gz" \
@@ -49,7 +49,7 @@ python -m utils.preprocess \
 **Vocabulary Files** We've included the vocabulary file in the release (under `data/vocab.bpe10000`). If you would like to create your own vocabulary (e.g., to try a different BPE vocabulary size), simply run:
 
 ```bash
-python -m utils.vocab \
+python -m DIRE.neural_model.utils.vocab \
     --use-bpe \
     --size=10000 \
     "data/preprocessed_data/train-shard-*.tar" \
@@ -65,7 +65,7 @@ Again, please refer to the script file's docstring for its complete usage.
 ```bash
 mkdir -p exp_runs/dire.hybrid   # create a work directory
 
-python exp.py \
+python -m DIRE.neural_model.exp \
     train \
     --cuda \
     --work-dir=exp_runs/dire.hybrid \
@@ -78,7 +78,7 @@ python exp.py \
 To evaluate a saved or pretrained model, run the following command. 
  
  ```bash
-python exp.py \
+python -m DIRE.neural_model.exp \
     test \
     --cuda \
     --extra-config='{"data": {"vocab_file": "data/vocab.bpe10000/vocab"}, "decoder": {"remove_duplicates_in_prediction": true, "vocab_file": "data/vocab.bpe10000/vocab"}, "encoder": {"graph_encoder":{"vocab_file": "data/vocab.bpe10000/vocab"}, "seq_encoder":{"vocab_file": "data/vocab.bpe10000/vocab"}}}' \

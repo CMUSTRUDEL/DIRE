@@ -180,7 +180,7 @@ class Vocab(object):
 
 
 if __name__ == '__main__':
-    from utils.dataset import Dataset
+    from .dataset import Dataset
 
     args = docopt(__doc__)
     vocab_size = int(args['--size'])
