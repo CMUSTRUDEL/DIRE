@@ -4,16 +4,16 @@ import numpy as np
 import torch
 from torch import nn as nn
 
-from model.embedding import NodeTypeEmbedder, SubTokenEmbedder
-from model.encoder import Encoder
-from model.graph_encoder import GraphASTEncoder
-from model.sequential_encoder import SequentialEncoder
-from model.gnn import GatedGraphNeuralNetwork, AdjacencyList
-from utils import util
-from utils.ast import AbstractSyntaxTree
-from utils.grammar import Grammar
-from utils.graph import PackedGraph
-from utils.vocab import Vocab
+from .embedding import NodeTypeEmbedder, SubTokenEmbedder
+from .encoder import Encoder
+from .graph_encoder import GraphASTEncoder
+from .sequential_encoder import SequentialEncoder
+from .gnn import GatedGraphNeuralNetwork, AdjacencyList
+from ..utils import util
+from ..utils.ast import AbstractSyntaxTree
+from ..utils.grammar import Grammar
+from ..utils.graph import PackedGraph
+from ..utils.vocab import Vocab
 
 
 class HybridEncoder(nn.Module):

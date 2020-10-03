@@ -24,14 +24,41 @@ import multiprocessing
 from multiprocessing import Process
 import numpy as np
 
-from utils.ast import SyntaxNode
-from utils.code_processing import canonicalize_code, annotate_type, canonicalize_constants, preprocess_ast, \
+from ..utils.ast import SyntaxNode
+from ..utils.code_processing import canonicalize_code, annotate_type, canonicalize_constants, preprocess_ast, \
     tokenize_raw_code
-from utils.dataset import Example, json_line_reader
+from ..utils.dataset import Example, json_line_reader
 from tqdm import tqdm
 
 all_functions = dict()  # indexed by binaries
 
+# This is a convenience function to generate an example directly from
+# a JSON string
+def generate_example_for_prediction(json_str, binary_file):
+    tree_json_dict = json.loads(json_str)
+
+    root = SyntaxNode.from_json_dict(tree_json_dict['ast'])
+
+    preprocess_ast(root, code=tree_json_dict['raw_code'])
+    code_tokens = tokenize_raw_code(tree_json_dict['raw_code'])
+    tree_json_dict['code_tokens'] = code_tokens
+
+    # add function name to the name field of the root block
+    root.name = tree_json_dict['function']
+    root.named_fields.add('name')
+
+    new_json_dict = root.to_json_dict()
+    tree_json_dict['ast'] = new_json_dict
+    json_str = json.dumps(tree_json_dict)
+
+    example = Example.from_json_dict(tree_json_dict,
+                                     binary_file=binary_file,
+                                     json_str=json_str,
+                                     code_tokens=code_tokens)
+
+    canonical_code = canonicalize_code(example.ast.code)
+    example.canonical_code = canonical_code
+    return example
 
 def is_valid_example(example):
     try:

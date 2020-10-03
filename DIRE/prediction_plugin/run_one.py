@@ -2,11 +2,11 @@
 # Returns variable name predictions from JSONL read on stdin
 # Requires Python 3
 
-from model.model import RenamingModel
+from ..neural_model.model.model import RenamingModel
 from typing import Dict, List, Any
-from utils.dataset import Dataset
-from utils.evaluation import Evaluator
-from utils.preprocess import generate_example
+from ..neural_model.utils.dataset import Dataset
+from ..neural_model.utils.evaluation import Evaluator
+from ..neural_model.utils.preprocess import generate_example_for_prediction
 import argparse
 import datetime
 import errno
@@ -29,7 +29,7 @@ parser.add_argument('--model',
 args = parser.parse_args()
 examples = []
 for line in sys.stdin:
-    examples.append(generate_example(line, None))
+    examples.append(generate_example_for_prediction(line, None))
 
 examples = filter(None, examples)
 
@@ -40,7 +40,7 @@ def seed_stuff():
     np.random.seed(seed * 13 // 7)
     random.seed(seed * 17 // 7)
     sys.setrecursionlimit(7000)
-    default_config = '{"decoder": {"remove_duplicates_in_prediction": true} }'
+    default_config = '{"decoder": {"remove_duplicates_in_prediction": true, "remove_identities_in_predictions": true} }'
     global extra_config
     extra_config = json.loads(default_config)
 
@@ -72,7 +72,7 @@ def decode(model: RenamingModel,
 seed_stuff()
 
 model = RenamingModel.load(args.model,
-                           use_cuda=False,
+                           use_cuda=torch.cuda.is_available(),
                            new_config=extra_config)
 
 decode_results = \

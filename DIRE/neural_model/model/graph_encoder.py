@@ -4,15 +4,15 @@ import numpy as np
 import torch
 from torch import nn as nn
 
-from model.embedding import NodeTypeEmbedder, SubTokenEmbedder
-from model.encoder import Encoder
-from model.gnn import GatedGraphNeuralNetwork, AdjacencyList
-from model.sequential_encoder import SequentialEncoder
-from utils import util
-from utils.ast import AbstractSyntaxTree
-from utils.grammar import Grammar
-from utils.graph import PackedGraph
-from utils.vocab import Vocab
+from .embedding import NodeTypeEmbedder, SubTokenEmbedder
+from .encoder import Encoder
+from .gnn import GatedGraphNeuralNetwork, AdjacencyList
+from .sequential_encoder import SequentialEncoder
+from ..utils import util
+from ..utils.ast import AbstractSyntaxTree
+from ..utils.grammar import Grammar
+from ..utils.graph import PackedGraph
+from ..utils.vocab import Vocab
 
 
 class GraphASTEncoder(Encoder):

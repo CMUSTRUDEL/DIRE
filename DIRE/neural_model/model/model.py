@@ -5,20 +5,20 @@ from typing import List, Dict, Tuple, Iterable
 import torch
 import torch.nn as nn
 
-from utils import nn_util, util
-from utils.ast import AbstractSyntaxTree
-from model.decoder import Decoder
-from model.recurrent_subtoken_decoder import RecurrentSubtokenDecoder
-from model.attentional_recurrent_subtoken_decoder import AttentionalRecurrentSubtokenDecoder
-from model.recurrent_decoder import RecurrentDecoder
-from model.simple_decoder import SimpleDecoder
-from model.encoder import Encoder
-from model.hybrid_encoder import HybridEncoder
-from model.sequential_encoder import SequentialEncoder
-from model.graph_encoder import GraphASTEncoder
-from utils.graph import PackedGraph
-from utils.dataset import Batcher, Example
-from utils.vocab import SAME_VARIABLE_TOKEN
+from ..utils import nn_util, util
+from ..utils.ast import AbstractSyntaxTree
+from .decoder import Decoder
+from .recurrent_subtoken_decoder import RecurrentSubtokenDecoder
+from .attentional_recurrent_subtoken_decoder import AttentionalRecurrentSubtokenDecoder
+from .recurrent_decoder import RecurrentDecoder
+from .simple_decoder import SimpleDecoder
+from .encoder import Encoder
+from .hybrid_encoder import HybridEncoder
+from .sequential_encoder import SequentialEncoder
+from .graph_encoder import GraphASTEncoder
+from ..utils.graph import PackedGraph
+from ..utils.dataset import Batcher, Example
+from ..utils.vocab import SAME_VARIABLE_TOKEN
 
 
 class RenamingModel(nn.Module):

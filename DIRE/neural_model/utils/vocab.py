@@ -20,7 +20,7 @@ import multiprocessing
 import json
 import sentencepiece as spm
 
-from utils.grammar import Grammar
+from .grammar import Grammar
 
 
 SAME_VARIABLE_TOKEN = '<IDENTITY>'

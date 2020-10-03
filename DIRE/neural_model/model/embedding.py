@@ -5,7 +5,7 @@ import sentencepiece as spm
 import torch
 import torch.nn as nn
 
-from utils.nn_util import SMALL_NUMBER
+from ..utils.nn_util import SMALL_NUMBER
 
 
 class SubTokenEmbedder(nn.Module):

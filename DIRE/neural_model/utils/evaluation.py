@@ -5,9 +5,9 @@ import torch
 
 import editdistance
 
-from utils import nn_util
-from utils.dataset import Dataset
-from model.model import RenamingModel
+from . import nn_util
+from .dataset import Dataset
+from ..model.model import RenamingModel
 
 
 class Evaluator(object):

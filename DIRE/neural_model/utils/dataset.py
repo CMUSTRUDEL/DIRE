@@ -14,11 +14,11 @@ import queue
 from tqdm import tqdm
 import numpy as np
 
-from utils import nn_util
-from utils.ast import AbstractSyntaxTree, SyntaxNode
-from utils.code_processing import annotate_type
-from utils.graph import PackedGraph
-from utils.vocab import VocabEntry, SAME_VARIABLE_TOKEN, Vocab
+from . import nn_util
+from .ast import AbstractSyntaxTree, SyntaxNode
+from .code_processing import annotate_type
+from .graph import PackedGraph
+from .vocab import VocabEntry, SAME_VARIABLE_TOKEN, Vocab
 import sentencepiece as spm
 import random
 
@@ -144,8 +144,8 @@ class Batcher(object):
             return len(examples) * max(e.target_prediction_seq_length for e in examples)
 
     def to_tensor_dict(self, examples: List[Example], return_prediction_target=True) -> Dict[str, torch.Tensor]:
-        from model.sequential_encoder import SequentialEncoder
-        from model.graph_encoder import GraphASTEncoder
+        from ..model.sequential_encoder import SequentialEncoder
+        from ..model.graph_encoder import GraphASTEncoder
 
         if not hasattr(examples[0], 'target_prediction_seq_length'):
             for example in examples:

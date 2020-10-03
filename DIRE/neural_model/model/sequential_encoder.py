@@ -4,10 +4,10 @@ import numpy as np
 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from model.encoder import *
-from utils import nn_util, util
-from utils.dataset import Example
-from utils.vocab import PAD_ID, Vocab
+from .encoder import *
+from ..utils import nn_util, util
+from ..utils.dataset import Example
+from ..utils.vocab import PAD_ID, Vocab
 import torch
 import torch.nn as nn
 

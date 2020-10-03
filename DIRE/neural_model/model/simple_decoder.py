@@ -3,10 +3,10 @@ from typing import Dict, List
 import torch
 from torch import nn as nn
 
-from model.decoder import Decoder
-from utils import util, nn_util
-from utils.ast import AbstractSyntaxTree
-from utils.vocab import Vocab, SAME_VARIABLE_TOKEN
+from .decoder import Decoder
+from ..utils import util, nn_util
+from ..utils.ast import AbstractSyntaxTree
+from ..utils.vocab import Vocab, SAME_VARIABLE_TOKEN
 
 
 class SimpleDecoder(Decoder):

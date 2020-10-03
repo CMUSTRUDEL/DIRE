@@ -1,7 +1,7 @@
 from collections import defaultdict, OrderedDict
 from typing import List, Dict
 
-from utils.ast import AbstractSyntaxTree, SyntaxNode
+from .ast import AbstractSyntaxTree, SyntaxNode
 
 
 class PackedGraph(object):

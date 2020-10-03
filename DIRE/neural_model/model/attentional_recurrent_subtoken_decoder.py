@@ -5,15 +5,15 @@ from typing import Dict, List, Any
 import torch
 from torch import nn as nn
 
-from model.decoder import Decoder
-from model.encoder import Encoder
-from utils import util, nn_util
-from utils.ast import AbstractSyntaxTree
-from utils.dataset import Example
-from utils.vocab import Vocab, SAME_VARIABLE_TOKEN, END_OF_VARIABLE_TOKEN
+from .decoder import Decoder
+from .encoder import Encoder
+from ..utils import util, nn_util
+from ..utils.ast import AbstractSyntaxTree
+from ..utils.dataset import Example
+from ..utils.vocab import Vocab, SAME_VARIABLE_TOKEN, END_OF_VARIABLE_TOKEN
 
-from model.recurrent_subtoken_decoder import RecurrentSubtokenDecoder
-from utils.vocab import Vocab
+from .recurrent_subtoken_decoder import RecurrentSubtokenDecoder
+from ..utils.vocab import Vocab
 
 
 class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
@@ -149,7 +149,7 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                     beam_cont_cand_hyp_scores.view(-1), k=k, dim=-1)
 
                 # (cont_beam_size)
-                beam_prev_hyp_ids = beam_new_hyp_positions / tgt_vocab_size
+                beam_prev_hyp_ids = beam_new_hyp_positions // tgt_vocab_size
                 beam_hyp_var_name_ids = beam_new_hyp_positions % tgt_vocab_size
 
                 _prev_hyp_ids = beam_prev_hyp_ids.cpu()

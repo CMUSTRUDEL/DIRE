@@ -6,8 +6,8 @@ import numpy as np
 
 import torch
 
-from utils.util import cached_property
-from utils.vocab import VocabEntry
+from .util import cached_property
+from .vocab import VocabEntry
 
 
 class SyntaxNode(object):
