@@ -31,16 +31,16 @@ import psutil, gc
 
 import torch
 
-from model.ensemble_model import EnsembleModel
-from model.simple_decoder import SimpleDecoder
-from model.graph_encoder import GraphASTEncoder
-from model.gnn import AdjacencyList, GatedGraphNeuralNetwork
-from model.model import RenamingModel
-from utils import nn_util, util
-from utils.ast import AbstractSyntaxTree
-from utils.dataset import Dataset, Example
-from utils.evaluation import Evaluator
-from utils.vocab import Vocab, VocabEntry
+from .model.ensemble_model import EnsembleModel
+from .model.simple_decoder import SimpleDecoder
+from .model.graph_encoder import GraphASTEncoder
+from .model.gnn import AdjacencyList, GatedGraphNeuralNetwork
+from .model.model import RenamingModel
+from .utils import nn_util, util
+from .utils.ast import AbstractSyntaxTree
+from .utils.dataset import Dataset, Example
+from .utils.evaluation import Evaluator
+from .utils.vocab import Vocab, VocabEntry
 
 
 import os

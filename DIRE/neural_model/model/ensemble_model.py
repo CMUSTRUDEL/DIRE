@@ -1,7 +1,7 @@
 from collections import OrderedDict, namedtuple
 
-from model.model import *
-from utils.vocab import END_OF_VARIABLE_TOKEN
+from .model import *
+from ..utils.vocab import END_OF_VARIABLE_TOKEN
 
 
 class EnsembleModel(nn.Module):
