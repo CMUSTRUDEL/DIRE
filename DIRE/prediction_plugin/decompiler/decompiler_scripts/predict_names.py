@@ -22,8 +22,7 @@ sentinel_vars = re.compile('@@VAR_[0-9]+')
 
 actname = "predict:varnames"
 
-dire_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..'))
-RUN_ONE = os.path.join(dire_dir, "run_one.py")
+dire_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', '..'))
 MODEL = os.path.join(dire_dir, 'data', 'saved_models', 'model.hybrid.bin')
 
 # Rename variables to sentinel representation
@@ -132,7 +131,7 @@ class predict_names_ah_t(idaapi.action_handler_t):
                     info, cfunc = func(ea, vuu)
                     # We must set the working directory to the dire dir to open the model correctly
                     os.chdir(dire_dir)
-                    p = subprocess.Popen([RUN_ONE, '--model', MODEL], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, encoding=sys.getdefaultencoding())
+                    p = subprocess.Popen(['python', '-m', 'DIRE.prediction_plugin.run_one', '--model', MODEL], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, encoding=sys.getdefaultencoding())
                     #print(info)
                     writer.write(info)
                     comm = p.communicate(input=f.getvalue())
