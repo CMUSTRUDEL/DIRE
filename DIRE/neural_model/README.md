@@ -69,7 +69,7 @@ python -m DIRE.neural_model.exp \
     train \
     --cuda \
     --work-dir=exp_runs/dire.hybrid \
-    --extra-config='{ "data": {"train_file": "data/preprocessed_data/train-shard-*.tar" }, "decoder": { "input_feed": false, "tie_embedding": true }, "train": { "evaluate_every_nepoch": 5, "max_epoch": 60 } }' \
+    --extra-config='{ "data": {"train_file": "data/preprocessed_data/train-shard-*.tar", "dev_file": "data/preprocessed_data/dev.tar" }, "decoder": { "input_feed": false, "tie_embedding": true }, "train": { "evaluate_every_nepoch": 5, "max_epoch": 60 } }' \
     data/config/config.hybrid.jsonnet
 ```
 
