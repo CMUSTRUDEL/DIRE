@@ -18,6 +18,24 @@ hexadecimal digit. This made them much easier to work with.
 
 A copy of Hex-Rays (and, implicitly, IDA Pro) is also required.
 
+Configuring IDA's DWARF Plugin (Optional)
+------------------------------
+
+By default, IDA uses DWARF debug information to rename variables _and_
+modify the calling convention.  But modifying the calling convention
+can modify the decompilation and introduce or remove variables as a
+side-effect, which interferes with the process of aligning variable
+names.
+
+To mitigate this, IDA's DWARF plugin can be configured to _not_ modify
+calling convention information.  To do this, make the following
+changes in the `dwarf.cfg` configuration file, which can be found in
+the `cfg` subdirectory of the IDA installation: set `DWARF_CC_APPLY =
+NO`, `DWARF_CC_ALLOW_USERCALL = NO`, and `DWARF_FPROTS_ARE_DEFINITIVE
+= NO`.  Alternatively, you can copy the example file for IDA 7.5 in
+`doc/dwarf.cfg` to the `cfg` subdirectory of the IDA installation, or
+to `~/.idapro/cfg` on Linux.
+
 Use
 ===
 
