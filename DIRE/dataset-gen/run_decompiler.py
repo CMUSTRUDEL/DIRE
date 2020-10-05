@@ -117,7 +117,8 @@ def do_file(binary):
                     # Dump the trees.
                     # No timeout here, we know it'll run in a reasonable amount of
                     # time and don't want mismatched files
-                    run_decompiler(stripped.name, env, DUMP_TREES)
+                    output = run_decompiler(stripped.name, env, DUMP_TREES)
+                    open(os.path.join(output_dir, binary + ".log"), "wb").write(output)
             except FileNotFoundError:
                 pass
         #end = datetime.datetime.now()

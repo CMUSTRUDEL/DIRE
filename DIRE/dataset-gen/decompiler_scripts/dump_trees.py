@@ -33,7 +33,7 @@ class RenamedGraphBuilder(GraphBuilder):
             else:
                 new_name = original_name
             # Save names
-            #print("Renaming %s to %s" % (original_name, new_name))
+            print("Renaming %s to %s" % (original_name, new_name))
             varnames[var_id] = (original_name, new_name)
             # Rename variables to @@VAR_[id]@@[orig name]@@[new name]
             v.name = '@@VAR_' + str(var_id) + '@@' + original_name + '@@' + new_name
@@ -70,7 +70,7 @@ def func(ea):
         function_name = GetFunctionName(ea)
     else:
         function_name = get_func_name(ea)
-    #print("Decompiling %s" % function_name)
+    print("Decompiling %s" % function_name)
     if f is None:
         print('Please position the cursor within a function')
 
