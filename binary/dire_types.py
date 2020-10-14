@@ -176,9 +176,10 @@ class TypeLib:
                     typ.find_udt_member(member, ida_typeinf.STRMEM_INDEX)
                     largest_size = max(largest_size, member.size)
                     type_name = member.type.dstr()
+                    # member.size is in bits, convert to bytes
                     members.append(
                         UDT.Field(
-                            name=member.name, size=member.size, type_name=type_name
+                            name=member.name, size=(member.size // 8), type_name=type_name
                         )
                     )
                 end_padding = size - (largest_size // 8)
@@ -205,7 +206,7 @@ class TypeLib:
                     type_name = member.type.dstr()
                     layout.append(
                         UDT.Field(
-                            name=member.name, size=member.size, type_name=type_name
+                            name=member.name, size=(member.size // 8), type_name=type_name
                         )
                     )
                 # Check for padding at the end
