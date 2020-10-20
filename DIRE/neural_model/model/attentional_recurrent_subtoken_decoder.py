@@ -142,6 +142,11 @@ class AttentionalRecurrentSubtokenDecoder(RecurrentSubtokenDecoder):
                 beam_end_hyp_pos = beam_start_hyp_pos + len(beam)
                 # (live_beam_size, vocab_size)
                 beam_cont_cand_hyp_scores = cont_cand_hyp_scores[beam_start_hyp_pos: beam_end_hyp_pos]
+
+                # discourage identity prediction
+                if remove_identity_prediction:
+                    beam_cont_cand_hyp_scores[:, same_variable_id]=float('-inf')
+
                 cont_beam_size = beam_size - len(completed_hyps[ast_id])
                 # Take `len(beam)` more candidates to account for possible duplicate
                 k = min(beam_cont_cand_hyp_scores.numel(), cont_beam_size + len(beam))
