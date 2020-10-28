@@ -188,11 +188,11 @@ class TypeLib:
                 return Union(
                     name=name,
                     members=members,
-                    padding=UDT.Padding(end_padding),
+                    padding=Padding(end_padding),
                 )
             else:
                 # UDT is a struct
-                layout: t.List[t.Union[UDT.Member, "Struct", "Union"]] = []
+                layout: t.List[t.Union[Padding, UDT.Field, "Struct", "Union"]] = []
                 next_offset = 0
                 for n in range(nmembers):
                     member = ida_typeinf.udt_member_t()
@@ -201,7 +201,7 @@ class TypeLib:
                     # Check for padding. Careful, because offset and
                     # size are in bits, not bytes.
                     if member.offset != next_offset:
-                        layout.append(UDT.Padding((member.offset - next_offset) // 8))
+                        layout.append(Padding((member.offset - next_offset) // 8))
                     next_offset = member.offset + member.size
                     type_name = member.type.dstr()
                     layout.append(
@@ -212,7 +212,7 @@ class TypeLib:
                 # Check for padding at the end
                 end_padding = size - next_offset // 8
                 if end_padding > 0:
-                    layout.append(UDT.Padding(end_padding))
+                    layout.append(Padding(end_padding))
                 return Struct(name=name, layout=layout)
         return TypeInfo(name=typ.dstr(), size=typ.get_size())
 
@@ -286,7 +286,7 @@ class TypeLib:
         - The list returned is sorted by decreasing frequency in the library
         """
         start = accessible[0]
-        if start != start_offset[0]:
+        if start != start_offsets[0]:
             print("No replacements, start != first accessible")
             return []
 
@@ -337,7 +337,7 @@ class TypeLib:
         offset = 0
         accessible = []
         for t in types:
-            accessible += [offset + a for a in t.accessible_types()]
+            accessible += [offset + a for a in t.accessible_offsets()]
             offset += t.size
         return accessible
 
@@ -401,7 +401,7 @@ class TypeLib:
             2: Array
             3: Pointer
             4: UDT.Field
-            5: UDT.Padding
+            5: Padding
             6: Struct
             7: Union
             8: Void
@@ -411,7 +411,7 @@ class TypeLib:
             1: Array
             2: Pointer
             3: UDT.Field
-            4: UDT.Padding
+            4: Padding
             5: Struct
             6: Union
             7: Void
@@ -581,28 +581,38 @@ class Pointer(TypeInfo):
         return f"{self.target_type_name} *"
 
 
+class Padding(TypeInfo):
+    """Padding bytes, either in a UDT or between variables on the stack"""
+
+    def __init__(self, size: int):
+        self.size = size
+
+    @classmethod
+    def _from_json(cls, d: t.Dict[str, int]) -> "Padding":
+        return cls(size=d["s"])
+
+    def _to_json(self) -> t.Dict[str, int]:
+        return {"T": 5, "s": self.size}
+
+    def __eq__(self, other: t.Any) -> bool:
+        if isinstance(other, Padding):
+            return self.size == other.size
+        return False
+
+    def __hash__(self) -> int:
+        return self.size
+
+    def __str__(self) -> str:
+        return f"PADDING ({self.size})"
+
+
 class UDT(TypeInfo):
     """An object representing struct or union types"""
 
     def __init__(self) -> None:
         raise NotImplementedError
 
-    class Member:
-        """A member of a UDT. Can be a Field or Padding"""
-
-        size: int = 0
-
-        def __init__(self) -> None:
-            raise NotImplementedError
-
-        @classmethod
-        def _from_json(cls, d: t.Dict[str, t.Any]) -> "UDT.Member":
-            raise NotImplementedError
-
-        def _to_json(self) -> t.Dict[str, t.Any]:
-            raise NotImplementedError
-
-    class Field(Member):
+    class Field:
         """Information about a field in a struct or union"""
 
         def __init__(self, *, name: str, size: int, type_name: str):
@@ -628,31 +638,6 @@ class UDT(TypeInfo):
         def __str__(self) -> str:
             return f"{self.type_name} {self.name}"
 
-    class Padding(Member):
-        """Padding bytes in a struct or union"""
-
-        def __init__(self, size: int):
-            self.size = size
-
-        @classmethod
-        def _from_json(cls, d: t.Dict[str, int]) -> "UDT.Padding":
-            return cls(size=d["s"])
-
-        def _to_json(self) -> t.Dict[str, int]:
-            return {"T": 5, "s": self.size}
-
-        def __eq__(self, other: t.Any) -> bool:
-            if isinstance(other, UDT.Padding):
-                return self.size == other.size
-            return False
-
-        def __hash__(self) -> int:
-            return self.size
-
-        def __str__(self) -> str:
-            return f"PADDING ({self.size})"
-
-
 class Struct(UDT):
     """Stores information about a struct"""
 
@@ -660,7 +645,7 @@ class Struct(UDT):
         self,
         *,
         name: t.Optional[str] = None,
-        layout: t.Iterable[t.Union[UDT.Member, "Struct", "Union"]],
+        layout: t.Iterable[t.Union[Padding, UDT.Field, "Struct", "Union"]],
     ):
         self.name = name
         self.layout = tuple(layout)
@@ -670,7 +655,7 @@ class Struct(UDT):
 
     def has_padding(self) -> bool:
         """True if the Struct has padding"""
-        return any((isinstance(m, UDT.Padding) for m in self.layout))
+        return any((isinstance(m, Padding) for m in self.layout))
 
     def accessible_offsets(self) -> t.Tuple[int, ...]:
         """Offsets accessible in this struct"""
@@ -692,7 +677,7 @@ class Struct(UDT):
         current_offset = 0
         for m in self.layout:
             next_offset = current_offset + m.size
-            if isinstance(m, UDT.Padding):
+            if isinstance(m, Padding):
                 for offset in range(current_offset, next_offset):
                     inaccessible += (offset,)
             current_offset = next_offset
@@ -755,7 +740,7 @@ class Union(UDT):
         *,
         name: t.Optional[str] = None,
         members: t.Iterable[t.Union[UDT.Field, "Struct", "Union"]],
-        padding: t.Optional[UDT.Padding] = None,
+        padding: t.Optional[Padding] = None,
     ):
         self.name = name
         self.members = tuple(members)
@@ -880,7 +865,7 @@ class FunctionPointer(TypeInfo):
 class TypeLibCodec:
     """Encoder/Decoder functions"""
 
-    CodecTypes = t.Union["TypeLib", "TypeLib.EntryList", "TypeInfo", "UDT.Member"]
+    CodecTypes = t.Union["TypeLib", "TypeLib.EntryList", "TypeInfo", "UDT.Field"]
 
     @staticmethod
     def decode(encoded: str) -> CodecTypes:
@@ -896,7 +881,7 @@ class TypeLibCodec:
                 t.Type["TypeLib"],
                 t.Type["TypeLib.EntryList"],
                 t.Type["TypeInfo"],
-                t.Type["UDT.Member"],
+                t.Type["UDT.Field"],
             ],
         ] = {
             "E": TypeLib.EntryList,
@@ -905,7 +890,7 @@ class TypeLibCodec:
             2: Array,
             3: Pointer,
             4: UDT.Field,
-            5: UDT.Padding,
+            5: Padding,
             6: Struct,
             7: Union,
             8: Void,
