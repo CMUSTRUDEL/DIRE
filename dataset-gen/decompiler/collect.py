@@ -120,7 +120,6 @@ class Collector(ida.action_handler_t):
             if size > 0:
                 padding = Padding(size)
                 padding_loc = Stack(loc)
-                print(f"Adding padding at {padding_loc} of size {size}")
                 collected_vars[padding_loc].add(Variable(typ=padding))
 
         return collected_vars
