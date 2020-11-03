@@ -4,6 +4,8 @@ import pickle
 import idaapi as ida
 from idautils import Functions
 
+from ida_lines import tag_remove
+
 from collect import Collector
 from function import Function
 from dire_types import TypeLib
@@ -52,11 +54,15 @@ class CollectDebug(Collector):
                 cfunc.get_stkoff_delta(),
                 [v for v in cfunc.get_lvars() if not v.is_arg_var],
             )
+            raw_code = ""
+            for line in cfunc.get_pseudocode():
+                raw_code += f"{' '.join(tag_remove(line.line).split())}\n"
             self.functions[ea] = Function(
                 name=name,
                 return_type=return_type,
                 arguments=arguments,
                 local_vars=local_vars,
+                raw_code=raw_code,
             )
 
         self.write_type_lib()
