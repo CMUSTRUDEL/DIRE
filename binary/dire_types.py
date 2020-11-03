@@ -179,7 +179,9 @@ class TypeLib:
                     # member.size is in bits, convert to bytes
                     members.append(
                         UDT.Field(
-                            name=member.name, size=(member.size // 8), type_name=type_name
+                            name=member.name,
+                            size=(member.size // 8),
+                            type_name=type_name,
                         )
                     )
                 end_padding = size - (largest_size // 8)
@@ -206,7 +208,9 @@ class TypeLib:
                     type_name = member.type.dstr()
                     layout.append(
                         UDT.Field(
-                            name=member.name, size=(member.size // 8), type_name=type_name
+                            name=member.name,
+                            size=(member.size // 8),
+                            type_name=type_name,
                         )
                     )
                 # Check for padding at the end
@@ -310,17 +314,13 @@ class TypeLib:
             if len(rest_start) == 0 and len(rest_accessible) != 0:
                 continue
             for typ in self[size]:
+                distance = start - typ.typeinfo.start_offsets()[0]
                 shifted_accessible = tuple(
-                    a + start for a in typ.typeinfo.accessible_offsets()
+                    a + distance for a in typ.typeinfo.accessible_offsets()
                 )
-                shifted_start = tuple(
-                    s + start for s in typ.typeinfo.start_offsets()
-                )
+                shifted_start = tuple(s + distance for s in typ.typeinfo.start_offsets())
                 # Accessible offsets and start offsets have to match.
-                if (
-                    cur_accessible == shifted_accessible
-                    and cur_start == shifted_start
-                ):
+                if cur_accessible == shifted_accessible and cur_start == shifted_start:
                     replacements.append((typ, rest_accessible, rest_start))
         return [
             (typ.typeinfo, a, s)
@@ -451,8 +451,10 @@ class TypeInfo:
         self.size = size
 
     def accessible_offsets(self) -> t.Tuple[int, ...]:
-        """Offsets accessible in this type"""
-        return tuple(range(self.size))
+        """Offsets accessible in this type. Since these offsets are relative
+        to the base pointer, they start from -size + 1 and grow to 0.
+        """
+        return tuple(range(-self.size + 1, 1))
 
     def inaccessible_offsets(self) -> t.Tuple[int, ...]:
         """Inaccessible offsets in this type (e.g., padding in a Struct)"""
@@ -460,7 +462,7 @@ class TypeInfo:
 
     def start_offsets(self) -> t.Tuple[int, ...]:
         """Start offsets of elements in this type"""
-        return (0,)
+        return (-self.size + 1,)
 
     def replacable_with(self, others: t.Tuple["TypeInfo", ...]) -> bool:
         """Check if this type can be replaced with others"""
@@ -516,9 +518,9 @@ class Array(TypeInfo):
     def start_offsets(self) -> t.Tuple[int, ...]:
         """Returns the start offsets elements in this array
 
-        For example, the type int[4] has start offsets [0, 4, 8, 12] (for 4-byte ints).
+        For example, the type int[4] has start offsets [-15, -11, -7, -3] (for 4-byte ints).
         """
-        return tuple(range(self.size)[:: self.element_size])
+        return tuple(range(-self.size + 1, 1)[:: self.element_size])
 
     @classmethod
     def _from_json(cls, d: t.Dict[str, t.Any]) -> "Array":
@@ -638,6 +640,7 @@ class UDT(TypeInfo):
         def __str__(self) -> str:
             return f"{self.type_name} {self.name}"
 
+
 class Struct(UDT):
     """Stores information about a struct"""
 
@@ -660,7 +663,7 @@ class Struct(UDT):
     def accessible_offsets(self) -> t.Tuple[int, ...]:
         """Offsets accessible in this struct"""
         accessible: t.Tuple[int, ...] = tuple()
-        current_offset = 0
+        current_offset = -self.size + 1
         for m in self.layout:
             next_offset = current_offset + m.size
             if isinstance(m, UDT.Field):
@@ -674,7 +677,7 @@ class Struct(UDT):
         if not self.has_padding():
             return tuple()
         inaccessible: t.Tuple[int, ...] = tuple()
-        current_offset = 0
+        current_offset = -self.size + 1
         for m in self.layout:
             next_offset = current_offset + m.size
             if isinstance(m, Padding):
@@ -689,10 +692,10 @@ class Struct(UDT):
         For example, if int is 4-bytes, char is 1-byte, and long is 8-bytes,
         a struct with the layout:
         [int, char, padding(3), long, long]
-        has offsets [0, 4, 8, 16].
+        has offsets [-15, -11, -7, -3].
         """
         starts: t.Tuple[int, ...] = tuple()
-        current_offset = 0
+        current_offset = -self.size + 1
         for m in self.layout:
             if isinstance(m, UDT.Field):
                 starts += (current_offset,)
@@ -701,10 +704,11 @@ class Struct(UDT):
 
     @classmethod
     def _from_json(cls, d: t.Dict[str, t.Any]) -> "Struct":
-        layout = []
-        for encoded_member in d["l"]:
-            layout.append(TypeLibCodec.read_metadata(encoded_member))
-        return cls(name=d["n"], layout=layout)
+        return cls(name=d["n"], layout=d["l"])
+        # layout = []
+        # for encoded_member in d["l"]:
+        #     layout.append(TypeLibCodec.read_metadata(encoded_member))
+        # return cls(name=d["n"], layout=layout)
 
     def _to_json(self) -> t.Dict[str, t.Any]:
         return {
@@ -759,17 +763,19 @@ class Union(UDT):
 
     def accessible_offsets(self) -> t.Tuple[int, ...]:
         """Offsets accessible in this Union"""
-        return tuple(range(max(m.size for m in self.members)))
+        return tuple(range(-max(m.size for m in self.members) + 1, 1))
 
     def inaccessible_offsets(self) -> t.Tuple[int, ...]:
         """Offsets inaccessible in this Union"""
         if not self.has_padding():
             return tuple()
-        return tuple(range(max(m.size for m in self.members), self.size))
+        max_size = max(m.size for m in self.members)
+        offsets = range(-self.size + 1, 1)
+        return tuple(o for o in offsets if o > -self.size + max_size)
 
     def start_offsets(self) -> t.Tuple[int, ...]:
         """Returns the start offsets elements in this Union"""
-        return (0,)
+        return (-self.size + 1,)
 
     @classmethod
     def _from_json(cls, d: t.Dict[str, t.Any]) -> "Union":
