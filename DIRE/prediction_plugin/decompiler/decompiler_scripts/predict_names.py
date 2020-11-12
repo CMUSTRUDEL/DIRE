@@ -1,5 +1,4 @@
 from collections import defaultdict
-from util import UNDEF_ADDR, CFuncGraph, GraphBuilder, hexrays_vars, get_expr_name
 import idaapi
 import ida_hexrays
 import json
@@ -8,6 +7,12 @@ import os
 import re
 import subprocess
 import sys
+
+thisScriptFilePath = os.path.realpath(__file__)
+utilsPath = os.path.dirname(thisScriptFilePath)
+sys.path.insert(0, utilsPath)
+
+from util import UNDEF_ADDR, CFuncGraph, GraphBuilder, hexrays_vars, get_expr_name
 
 try:
     from CStringIO import StringIO ## for Python 2

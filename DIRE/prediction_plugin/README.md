@@ -31,13 +31,11 @@ tar -xzf pretrained_model.tar.gz
 ### Plugin
 
 To install the script as a plugin, create a symbolic link to
-`prediction-plugin/decompiler/decompiler-scripts/predict_names.py` and
-`prediction-plugin/decompiler/decompiler-scripts/util.py` from your
+`prediction-plugin/decompiler/decompiler-scripts/predict_names.py` from your
 Hex-Rays `plugins` directory.  For example:
 
 ```bash
 ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/predict_names.py /path/to/idapro-7.5/plugins/predict_names.py
-ln -s /path/to/prediction-plugin/decompiler/decompiler-scripts/util.py /path/to/idapro-7.5/plugins/util.py
 ```
 
 You only need to do this once.
