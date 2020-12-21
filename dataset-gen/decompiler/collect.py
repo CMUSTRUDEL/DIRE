@@ -85,6 +85,7 @@ class Collector(ida.action_handler_t):
         padding_to_add = dict()
 
         for v in variables:
+            loc = None
             if v.is_stk_var():
                 # If this is a stack variable, get its start offset and
                 # check if there is padding. If there is, add it to the
@@ -111,9 +112,10 @@ class Collector(ida.action_handler_t):
                 loc = Register(v.get_reg1())
                 typ = TypeLib.parse_ida_type(v.type())
 
-            collected_vars[loc].add(
-                Variable(typ=typ, name=v.name, user=v.has_user_info)
-            )
+            if loc is not None:
+                collected_vars[loc].add(
+                    Variable(typ=typ, name=v.name, user=v.has_user_info)
+                )
 
         # Add all the padding.
         for loc, size in padding_to_add.values():
