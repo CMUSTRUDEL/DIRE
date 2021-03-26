@@ -1,5 +1,5 @@
-from collections import defaultdict, OrderedDict
-from typing import List, Dict
+from collections import OrderedDict, defaultdict
+from typing import Dict, List
 
 from utils.ast import AbstractSyntaxTree, SyntaxNode
 
@@ -24,11 +24,9 @@ class PackedGraph(object):
         for node in ast:
             self.register_node(ast_id, node.node_id)
 
-    def register_node(self,
-                      tree_id,
-                      node,
-                      group='ast_nodes',
-                      return_node_index_in_group=False):
+    def register_node(
+        self, tree_id, node, group="ast_nodes", return_node_index_in_group=False
+    ):
         if group not in self.node_groups[tree_id]:
             self.node_groups[tree_id][group] = OrderedDict()
 
@@ -44,7 +42,7 @@ class PackedGraph(object):
 
         return packed_node_id
 
-    def get_packed_node_id(self, tree_id, node, group='ast_nodes'):
+    def get_packed_node_id(self, tree_id, node, group="ast_nodes"):
         if isinstance(node, SyntaxNode):
             node = node.node_id
         return self.node_groups[tree_id][group][node]
