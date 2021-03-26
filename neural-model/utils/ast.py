@@ -1,18 +1,23 @@
 from collections import OrderedDict
 from io import StringIO
-import ujson as json
 from typing import Dict, List
-import numpy as np
 
-import torch
-
+import ujson as json
 from utils.util import cached_property
 from utils.vocab import VocabEntry
 
 
 class SyntaxNode(object):
     """represent a node on an AST"""
-    def __init__(self, node_id, node_type, address=None, children: List=None, named_fields: Dict=None):
+
+    def __init__(
+        self,
+        node_id,
+        node_type,
+        address=None,
+        children: List = None,
+        named_fields: Dict = None,
+    ):
         self.node_id = node_id
         self.node_type = node_type
         self.address = address
@@ -29,29 +34,35 @@ class SyntaxNode(object):
             for child in children:
                 self.add_child(child)
 
-    def add_child(self, child: 'SyntaxNode') -> None:
+    def add_child(self, child: "SyntaxNode") -> None:
         self.children.append(child)
         child.parent = self
 
     @classmethod
-    def from_json_dict(cls, json_dict: Dict) -> 'SyntaxNode':
-        named_fields = {k: v for k, v in json_dict.items() if k not in {'node_id', 'node_type', 'children', 'address', 'x', 'y', 'z'}}
+    def from_json_dict(cls, json_dict: Dict) -> "SyntaxNode":
+        named_fields = {
+            k: v
+            for k, v in json_dict.items()
+            if k not in {"node_id", "node_type", "children", "address", "x", "y", "z"}
+        }
 
-        if 'x' in json_dict:
-            named_fields['x'] = SyntaxNode.from_json_dict(json_dict['x'])
-        if 'y' in json_dict:
-            named_fields['y'] = SyntaxNode.from_json_dict(json_dict['y'])
-        if 'z' in json_dict:
-            named_fields['z'] = SyntaxNode.from_json_dict(json_dict['z'])
+        if "x" in json_dict:
+            named_fields["x"] = SyntaxNode.from_json_dict(json_dict["x"])
+        if "y" in json_dict:
+            named_fields["y"] = SyntaxNode.from_json_dict(json_dict["y"])
+        if "z" in json_dict:
+            named_fields["z"] = SyntaxNode.from_json_dict(json_dict["z"])
 
-        node = cls(json_dict['node_id'],
-                   json_dict['node_type'],
-                   json_dict['address'],
-                   named_fields=named_fields)
+        node = cls(
+            json_dict["node_id"],
+            json_dict["node_type"],
+            json_dict["address"],
+            named_fields=named_fields,
+        )
 
         children_list = []
-        if 'children' in json_dict:
-            children_list.extend(json_dict['children'])
+        if "children" in json_dict:
+            children_list.extend(json_dict["children"])
 
         for child_dict in children_list:
             child_node = SyntaxNode.from_json_dict(child_dict)
@@ -60,13 +71,13 @@ class SyntaxNode(object):
         return node
 
     def to_json_dict(self):
-        json_dict = dict(node_id=self.node_id,
-                         node_type=self.node_type,
-                         address=self.address)
+        json_dict = dict(
+            node_id=self.node_id, node_type=self.node_type, address=self.address
+        )
 
         for named_filed in self.named_fields:
             val = getattr(self, named_filed)
-            if named_filed in ('x', 'y', 'z'):
+            if named_filed in ("x", "y", "z"):
                 json_dict[named_filed] = val.to_json_dict()
             else:
                 json_dict[named_filed] = val
@@ -75,17 +86,22 @@ class SyntaxNode(object):
             children = []
             for child in self.children:
                 children.append(child.to_json_dict())
-            json_dict['children'] = children
+            json_dict["children"] = children
 
         return json_dict
 
     @property
     def is_variable_node(self):
-        return self.node_type == 'var'
+        return self.node_type == "var"
 
     @property
     def is_terminal_node(self):
-        return not hasattr(self, 'x') and not hasattr(self, 'y') and not hasattr(self, 'z') and not self.children
+        return (
+            not hasattr(self, "x")
+            and not hasattr(self, "y")
+            and not hasattr(self, "z")
+            and not self.children
+        )
 
     @cached_property
     def size(self):
@@ -97,11 +113,11 @@ class SyntaxNode(object):
 
     @property
     def member_nodes(self):
-        if hasattr(self, 'x'):
+        if hasattr(self, "x"):
             yield self.x
-        if hasattr(self, 'y'):
+        if hasattr(self, "y"):
             yield self.y
-        if hasattr(self, 'z'):
+        if hasattr(self, "z"):
             yield self.z
 
         for child in self.children:
@@ -109,14 +125,14 @@ class SyntaxNode(object):
 
     @property
     def named_succeeding_fields(self):
-        if hasattr(self, 'x'):
-            yield 'x', self.x
-        if hasattr(self, 'y'):
-            yield 'y', self.y
-        if hasattr(self, 'z'):
-            yield 'z', self.z
+        if hasattr(self, "x"):
+            yield "x", self.x
+        if hasattr(self, "y"):
+            yield "y", self.y
+        if hasattr(self, "z"):
+            yield "z", self.z
 
-        yield 'children', self.children
+        yield "children", self.children
 
     @property
     def descendant_nodes(self):
@@ -125,6 +141,7 @@ class SyntaxNode(object):
 
             for member_node in node.member_nodes:
                 yield from _visit(member_node)
+
         yield from _visit(self)
 
     def __iter__(self):
@@ -138,18 +155,19 @@ class SyntaxNode(object):
         return code
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__): return False
-
-        if self.node_type != other.node_type: return False
-        if self.address != other.address: return False
-        if self.node_id != other.node_id: return False
-        if len(self.children) != len(other.children): return False
+        if (
+            not isinstance(other, self.__class__)
+            or self.node_type != other.node_type
+            or self.address != other.address
+            or self.node_id != other.node_id
+            or self.named_fields != other.named_fields
+            or len(self.children) != len(other.children)
+        ):
+            return False
 
         for i in range(len(self.children)):
             if self.children[i] != other.children[i]:
                 return False
-
-        if self.named_fields != other.named_fields: return False
 
         return True
 
@@ -162,44 +180,51 @@ class SyntaxNode(object):
             is_root = True
             sb = StringIO()
 
-        sb.write(f'(Node{self.node_id}-{self.node_type}')
+        sb.write(f"(Node{self.node_id}-{self.node_type}")
         for key in self.named_fields:
             val = getattr(self, key)
-            if key not in ('x', 'y', 'z'):
-                sb.write('-')
-                sb.write(f'{key}:{val}'.replace(' ', '_').replace('(', '_').replace(')', '_'))
+            if key not in ("x", "y", "z"):
+                sb.write("-")
+                sb.write(
+                    f"{key}:{val}".replace(" ", "_").replace("(", "_").replace(")", "_")
+                )
         # sb.write(f'Node-{self.node_id}-{self.node_type}')
 
         for field_name, node in self.named_succeeding_fields:
-            if field_name in ('x', 'y'):
-                sb.write(f' ({field_name} ')
+            if field_name in ("x", "y"):
+                sb.write(f" ({field_name} ")
                 node.to_string(sb)
-                sb.write(')')  # of x
+                sb.write(")")  # of x
             elif self.children:
-                sb.write(' (children ')
+                sb.write(" (children ")
                 for child in self.children:
-                    sb.write(' ')
+                    sb.write(" ")
                     child.to_string(sb)
-                sb.write(')')  # of children field
+                sb.write(")")  # of children field
 
-        sb.write(')')  # of node
+        sb.write(")")  # of node
 
         if is_root:
             return sb.getvalue()
 
     def __str__(self):
-        return f'Node {self.node_id} {self.node_type}@{self.address}'
+        return f"Node {self.node_id} {self.node_type}@{self.address}"
 
     __repr__ = __str__
 
 
 class TerminalNode(SyntaxNode):
-    """a terminal AST node representing variables or other terminal syntax tokens"""
+    """a terminal AST node representing variables or other terminal syntax
+    tokens
+    """
+
     pass
 
 
 class AbstractSyntaxTree(object):
-    def __init__(self, root: SyntaxNode, compilation_unit: str = None, code: str = None):
+    def __init__(
+        self, root: SyntaxNode, compilation_unit: str = None, code: str = None
+    ):
         self.root = root
         self.compilation_unit = compilation_unit
         self.code = code
@@ -213,10 +238,14 @@ class AbstractSyntaxTree(object):
         self._init_index()
 
     @classmethod
-    def from_json_dict(cls, json_dict: Dict) -> 'AbstractSyntaxTree':
-        root = SyntaxNode.from_json_dict(json_dict['ast'])
-        root.name = json_dict['function']
-        tree = cls(root, compilation_unit=json_dict['function'], code=json_dict['raw_code'] if 'raw_code' in json_dict else None)
+    def from_json_dict(cls, json_dict: Dict) -> "AbstractSyntaxTree":
+        root = SyntaxNode.from_json_dict(json_dict["ast"])
+        root.name = json_dict["function"]
+        tree = cls(
+            root,
+            compilation_unit=json_dict["function"],
+            code=json_dict.get("raw_code", None),
+        )
 
         return tree
 
@@ -248,19 +277,21 @@ class AbstractSyntaxTree(object):
 
         _index_sub_tree(self.root, None)
 
-        setattr(self, 'adjacency_list', adj_list)
-        setattr(self, 'id_to_node', id2node)
-        setattr(self, 'adjacent_terminal_nodes', [])  # TODO: implement this!
-        setattr(self, 'variable_nodes', variable_nodes)
-        setattr(self, 'variables', variables)
-        terminal_nodes.sort(key=lambda n: n.node_id)  # TODO: change to address based!
-        setattr(self, 'terminal_nodes', terminal_nodes)
+        setattr(self, "adjacency_list", adj_list)
+        setattr(self, "id_to_node", id2node)
+        # TODO: implement this!
+        setattr(self, "adjacent_terminal_nodes", [])
+        setattr(self, "variable_nodes", variable_nodes)
+        setattr(self, "variables", variables)
+        # TODO: change to address based!
+        terminal_nodes.sort(key=lambda n: n.node_id)
+        setattr(self, "terminal_nodes", terminal_nodes)
 
     def __iter__(self):
         return iter((node for node in self.id_to_node.values()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     json_str = """
 {
     "function": "ft_strncat",
@@ -693,7 +724,7 @@ if __name__ == '__main__':
 }
 """
     json_dict = json.loads(json_str)
-    tree = SyntaxNode.from_json_dict(json_dict['root'])
+    tree = SyntaxNode.from_json_dict(json_dict["root"])
 
     tree_reconstr = SyntaxNode.from_json_dict(tree.to_json_dict())
     assert tree_reconstr == tree

@@ -7,10 +7,10 @@
 #   reference shadowed global variables. We throw away this operator.
 
 from enum import Enum, auto
+
 from pygments import lex
-from pygments.token import Token
-from pygments.token import is_token_subtype
 from pygments.lexers.c_cpp import CLexer, inherit
+from pygments.token import Token, is_token_subtype
 
 Token.Placeholder = Token.Token.Placeholder
 
@@ -42,8 +42,7 @@ class Lexer:
             # Pygments breaks up strings into individual tokens representing
             # things like opening quotes and escaped characters. We want to
             # collapse all of these into a single string literal token.
-            if previous_string \
-               and not is_token_subtype(token_type, Token.String):
+            if previous_string and not is_token_subtype(token_type, Token.String):
                 yield (Token.String, previous_string)
                 previous_string = None
             if is_token_subtype(token_type, Token.String):
@@ -57,15 +56,14 @@ class Lexer:
             elif is_token_subtype(token_type, Token.Comment):
                 continue
             # Skip the :: token added by HexRays
-            elif is_token_subtype(token_type, Token.Operator) \
-                    and token == '::':
+            elif is_token_subtype(token_type, Token.Operator) and token == "::":
                 continue
             # Replace the text of placeholder tokens
             elif is_token_subtype(token_type, Token.Placeholder):
                 yield {
                     Names.RAW: (token_type, token),
-                    Names.SOURCE: (token_type, token.split('@@')[2]),
-                    Names.TARGET: (token_type, token.split('@@')[3]),
+                    Names.SOURCE: (token_type, token.split("@@")[2]),
+                    Names.TARGET: (token_type, token.split("@@")[3]),
                 }[var_names]
             elif not is_token_subtype(token_type, Token.Text):
                 yield (token_type, token.strip())
@@ -79,39 +77,39 @@ class Lexer:
 class HexRaysLexer(CLexer):
     # Additional tokens
     tokens = {
-        'statements': [
-            (r'->', Token.Operator),
-            (r'\+\+', Token.Operator),
-            (r'--', Token.Operator),
-            (r'==', Token.Operator),
-            (r'!=', Token.Operator),
-            (r'>=', Token.Operator),
-            (r'<=', Token.Operator),
-            (r'&&', Token.Operator),
-            (r'\|\|', Token.Operator),
-            (r'\+=', Token.Operator),
-            (r'-=', Token.Operator),
-            (r'\*=', Token.Operator),
-            (r'/=', Token.Operator),
-            (r'%=', Token.Operator),
-            (r'&=', Token.Operator),
-            (r'\^=', Token.Operator),
-            (r'\|=', Token.Operator),
-            (r'<<=', Token.Operator),
-            (r'>>=', Token.Operator),
-            (r'<<', Token.Operator),
-            (r'>>', Token.Operator),
-            (r'\.\.\.', Token.Operator),
-            (r'##', Token.Operator),
-            (r'::', Token.Operator),
-            (r'@@VAR_[0-9]+@@\w+@@\w+', Token.Placeholder.Var),
-            inherit
+        "statements": [
+            (r"->", Token.Operator),
+            (r"\+\+", Token.Operator),
+            (r"--", Token.Operator),
+            (r"==", Token.Operator),
+            (r"!=", Token.Operator),
+            (r">=", Token.Operator),
+            (r"<=", Token.Operator),
+            (r"&&", Token.Operator),
+            (r"\|\|", Token.Operator),
+            (r"\+=", Token.Operator),
+            (r"-=", Token.Operator),
+            (r"\*=", Token.Operator),
+            (r"/=", Token.Operator),
+            (r"%=", Token.Operator),
+            (r"&=", Token.Operator),
+            (r"\^=", Token.Operator),
+            (r"\|=", Token.Operator),
+            (r"<<=", Token.Operator),
+            (r">>=", Token.Operator),
+            (r"<<", Token.Operator),
+            (r">>", Token.Operator),
+            (r"\.\.\.", Token.Operator),
+            (r"##", Token.Operator),
+            (r"::", Token.Operator),
+            (r"@@VAR_[0-9]+@@\w+@@\w+", Token.Placeholder.Var),
+            inherit,
         ]
     }
 
 
-if __name__ == '__main__':
-    code = '''
+if __name__ == "__main__":
+    code = """
 __int64 (__fastcall **)(unsigned __int64, signed __int64,
                         __int64, _QWORD, __int64, signed __int64) {
   int a = "asdfsdf";
@@ -119,5 +117,5 @@ __int64 (__fastcall **)(unsigned __int64, signed __int64,
   a = asd::safd();
   sadf=12
   /*asdf*/
-}'''
+}"""
     print([str(token[0]) for token in Lexer(code).get_tokens()])
