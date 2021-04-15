@@ -1,0 +1,13 @@
+docopt
+editdistance
+jsonnet
+jsonlines
+psutil
+sentencepiece
+tensorboard
+tensorboardX
+tqdm
+ujson
+pygments
+torch
+
