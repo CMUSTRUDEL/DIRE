@@ -10,4 +10,4 @@ tqdm
 ujson
 pygments
 # if you want to use the cpu, run pip install --find-links https://download.pytorch.org/whl/torch_stable.html -r requirements.txt
-torch==1.6.0+cpu
+torch==2.7.0
